@@ -1,0 +1,4 @@
+启动指令：
+cd ~/gazebo_test_ws/src/start_game
+python2 main.py
+（若无法正常开启gazebo或rviz则命令行手动开启：roslaunch gazebo_pkg race.launch  ; roslaunch gazebo_nav navi_demo.launch）

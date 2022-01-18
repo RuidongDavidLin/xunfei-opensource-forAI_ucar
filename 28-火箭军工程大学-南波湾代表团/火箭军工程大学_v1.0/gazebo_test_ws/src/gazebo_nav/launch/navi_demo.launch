@@ -1,0 +1,25 @@
+<launch>
+  <master auto= "start"/>
+
+  <!-- Arguments -->
+  <arg name="map_file" default="$(find gazebo_nav)/maps/map.yaml"/>  <!-- 如有修改地图，只需要改这里就可以-->
+  <arg name="open_rviz" default="true"/>
+
+  <!-- Map server ,启动地图-->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find gazebo_map)/map/full_map.yaml" output="screen">
+     <param name="frame_id" value="map" />
+   </node>
+
+  <node pkg = "gazebo_nav" name="hijace_vel" type="hijack_vel.py"/>
+  <!-- AMCL -->
+  <include file="$(find gazebo_nav)/launch/amcl.launch"/>
+
+  <!-- move_base -->
+  <include file="$(find gazebo_nav)/launch/move_base.launch"/>
+
+  <!-- 启动rviz -->
+  <group if="$(arg open_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" required="true" 
+                             args="-d $(find gazebo_nav)/rviz/race_navigation.rviz"/>
+  </group>
+</launch>

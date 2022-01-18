@@ -1,0 +1,8 @@
+1.解压缩文件到根目录
+2.catkin_make
+3.安装依赖：
+sudo apt-get install ros-melodic-cartographer*
+sudo apt-get install ros-melodic-navigation
+sudo apt install ros-melodic-teleop-twist-keyboard
+sudo apt install ros-melodic-rqt-graph
+4.进入gazebo_test_ws/src/start_game,打开终端，输入python2 main.py

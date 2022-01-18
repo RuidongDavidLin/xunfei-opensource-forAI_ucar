@@ -1,0 +1,32 @@
+把gazebo_test_ws.zip压缩包解压缩到/home
+
+在gazebo_test_ws目录下，catkin_make编译:
+  	cd ~/gazebo_test_ws
+  	catkin_make
+
+
+安装好依赖的功能包：
+	sudo apt-get install ros-melodic-teb-*
+	sudo apt-get install ros-melodic-teb-*
+	sudo apt-get install ros-melodic-move-base
+	sudo apt-get install ros-melodic-navigation-*
+	sudo apt-get install ros-melodic-joint-state-*
+	sudo apt-get install ros-melodic-amcl
+	sudo apt-get install ros-melodic-global-planner-*
+	
+	sudo apt-get install ros-melodic-cartographer*
+	sudo apt-get install ros-melodic-navigation
+	sudo apt-get install ros-melodic-cartographer*
+	sudo apt-get install ros-melodic-navigation
+	sudo apt install ros-melodic-teleop-twist-keyboard
+	sudo apt-get install ros-melodic-cartographer*
+	sudo apt-get install ros-melodic-navigation
+	sudo apt install ros-melodic-teleop-twist-keyboard
+	sudo apt install ros-melodic-rqt-graph
+
+在gazebo_test_ws/src/start_game目录下，运行main.py
+
+	cd ~/gazebo_test_ws/src/start_game
+	python2 main.py
+
+即可

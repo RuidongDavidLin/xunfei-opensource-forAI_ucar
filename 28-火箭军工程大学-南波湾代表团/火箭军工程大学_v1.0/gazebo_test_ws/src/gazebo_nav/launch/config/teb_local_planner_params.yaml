@@ -1,0 +1,130 @@
+TebLocalPlannerROS:
+
+ odom_topic: "odom"
+ map_frame: "map"  #Global planning frame (in case of a static map, this parameter must be usually changed to "/map".
+    
+ # Trajectory
+  
+ teb_autosize: True
+ dt_ref: 0.3  #规划轨迹的时间分辨率,运行过程中会根据实际情况调整。局部路径规划的解析度。该值越小,运动越缓慢。默认 0.3。
+ dt_hysteresis: 0.03  #允许改变的时域解析度的浮动范围, 一般为 dt_ref 的10% 左右,默认 0.1。
+ min_samples: 5
+ global_plan_overwrite_orientation: True   #覆盖全局规划器提供的局部子目标的方向(因为它们通常只提供一个 2D 路径),默认 true。
+ allow_init_with_backwards_motion: False    #如果为true，则可以通过向后运动来初始化基础轨迹，以防目标在本地成本图中落后于起点（仅在机器人配备了后部传感器的情况下才建议这样做）。 
+ max_global_plan_lookahead_dist: 4   #指定优化所考虑的全局计划子集的最大长度(累积欧几里得距离)。实际的长度是由本地成本图大小和这个最大界限的逻辑连接所决定的。设置为零或负数,以取消此限制。默认 3.0。
+ global_plan_viapoint_sep: 3   # * 如果为正，则从全局计划中引出通孔点（路径遵循模式）。 该值确定参考路径的分辨率（如果为负值，则禁用全局规划中每两个连续通孔之间的最小距离）。 请参阅参数weight_viapoint以调整强度。 
+ global_plan_prune_distance: 1
+ force_reinit_new_goal_dist: 1   #如果更新的先前目标的间隔大于指定值（以米为单位），则重新初始化轨迹（跳过热启动）
+ exact_arc_length: True
+ feasibility_check_no_poses: 0.5  #检测姿态在规划路径的可行性的时间间隔,默认 4。
+ publish_feedback: False
+    
+ # Robot
+         
+ max_vel_x: 0.7   #单位：米/秒^ 2 
+ max_vel_x_backwards: 0.2   #  * 向后行驶时机器人的最大绝对平移速度，以米/秒为单位。 请参阅优化参数weight_kinematics_forward_drive 
+ max_vel_y: 0.0
+ max_vel_theta: 7.5 # the angular velocity is also bounded by min_turning_radius in case of a carlike robot (r = v / omega)  弧度/秒
+ acc_lim_x: 0   #单位：米/秒^ 2 
+ acc_lim_theta: 0  #以弧度/秒^ 2为单位 
+
+ # ********************** Carlike robot parameters ********************
+ min_turning_radius: 0        # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
+ wheelbase: 0.2                 # Wheelbase of our robot
+ cmd_angle_instead_rotvel: False # stage simulator takes the angle instead of the rotvel as input (twist message)
+ # ********************************************************************
+
+ footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
+   type: "polygon"
+   #radius: 0.2 # for type "circular"
+   #line_start: [0.0, 0.0] # for type "line"
+   #line_end: [0.335, 0.0] # for type "line"
+   #front_offset: 0.2 # for type "two_circles"
+   #front_radius: 0.2 # for type "two_circles"
+   #rear_offset: 0.2 # for type "two_circles"
+   #rear_radius: 0.2 # for type "two_circles"
+   vertices: [[-0.16, -0.18], [-0.16, 0.18], [0.16, 0.18], [0.16, -0.18]]  # for type "polygon"
+
+ # GoalTolerance
+    
+ xy_goal_tolerance: 0.8
+ yaw_goal_tolerance: 0.6
+ free_goal_vel: False
+
+
+ complete_global_plan: True
+    
+ # Obstacles
+    
+ #和障碍物的最小距离,使小车中心与障碍物的实时距离大于 footprint_model+min_obstacle_dist,即临时规划路径。
+ #footprint_model+min_obstacle_dist 需要大于通用配置文件中的 footprint,但是不建议大太多,否则影响路径规划。临时规划路径高于全局规划路径。默认 0.5。
+ min_obstacle_dist: 0.1 # This value must also include our robot's expansion, since footprint_model is set to "line".
+ inflation_dist: 0.6
+ include_costmap_obstacles: True    #是否考虑 local_costmap 中的障碍。标记为障碍的每个单元格被认为是一个点障碍。因此,不要选择一个非常小的成本图分辨率,因为它增加了计算时间。默认 true。
+ costmap_obstacles_behind_robot_dist: 1.5   #限制机器人后方规划时考虑的局部成本地图障碍物,默认 1.0。
+ #obstacle_poses_affected: 15    #障碍物姿态受影响 ,为了保持距离,每个障碍物的位置受影响于在轨迹上的最近的姿态。影响轨迹在障碍物附件的流畅性。默认 30。每个障碍物位置都附加到轨迹上最接近的姿势，以保持一定距离。 也可以考虑其他邻居。 请注意，此参数可能会在将来的版本中删除，因为障碍关联策略已在动力学+中进行了修改。 请参考legacy_obstacle_association的参数说明。 
+ legacy_obstacle_association:  False  #修改了将轨迹姿态与障碍物联系起来以进行优化的策略（请参阅变更日志）。 您可以通过将此参数设置为true来切换到旧策略/上一个策略。 旧策略：针对每个障碍物，找到最近的TEB姿势； 新策略：对于每个姿势，仅找到“相关”障碍。 
+ dynamic_obstacle_inflation_dist: 0.6
+ include_dynamic_obstacles: False  #如果将此参数设置为true，则将通过等速模型在优化过程中预测并考虑速度为非零的障碍物的运动（通过用户在主题〜/障碍物上提供的障碍物或从costmap_converter获得）。 新的  
+
+ costmap_converter_plugin: ""
+ costmap_converter_spin_thread: True
+ costmap_converter_rate: 5
+
+ # Optimization
+    
+ no_inner_iterations: 5  #每次外部循环迭代中调用的实际求解器迭代次数。 参见参数no_outer_iterations。 
+ no_outer_iterations: 4  #每次外部循环迭代都会根据所需的时间分辨率dt_ref自动调整轨迹的大小，并调用内部优化器（执行no_inner_iterations）。 因此，每个计划周期中求解程序迭代的总数是两个值的乘积。 
+ optimization_activate: True
+ optimization_verbose: False
+ penalty_epsilon: 0.05  #为惩罚函数增加一个小的安全余量，以实现硬约束近似 
+ obstacle_cost_exponent: 4
+ weight_max_vel_x: 1.5
+ weight_max_vel_theta: 1
+ weight_acc_lim_x: 1
+ weight_acc_lim_theta: 1
+ weight_kinematics_nh: 1000
+ weight_kinematics_forward_drive: 1500   #优化权重迫使机器人只选择前进方向(正 transl)。速度)。小权重(例如 1.0)仍然允许倒车。在 1000 左右的值几乎可以防止反向驾驶(但不能保证)。优化过程中,迫使机器人只选择前进方向,差速轮适用。默认 1。
+ weight_kinematics_turning_radius: 1    #实现最小转弯半径的优化权重(仅适用于类车机器人)。优化过程中,车型机器人的最小转弯半径的权重。默认1
+ weight_optimaltime: 3 # must be > 0#优化过程中,基于轨迹的时间上的权重,默认 1。
+ weight_shortest_path: 0.2
+ weight_obstacle: 100   #与障碍物保持最小距离的优化权重, 默认 50。
+ weight_inflation: 0.1   #通胀惩罚的优化权重（应该很小）。
+ weight_dynamic_obstacle: 10 # not in use yet
+ weight_dynamic_obstacle_inflation: 0.2
+ weight_viapoint: 1  #优化权重，以最小化到通孔点（参考路径）的距离。 
+ weight_adapt_factor: 2  #在每个外部TEB迭代中，一些特殊权重（当前为weight_obstacle）会以此因子重复缩放（weight_new = weight_old * factor）。 迭代地增加权重而不是设置较大的先验值会导致底层优化问题的更好的数值条件。 
+
+ # Homotopy Class Planner
+
+ enable_homotopy_class_planning: False
+ enable_multithreading: True
+ simple_exploration: False
+ max_number_classes: 3
+ selection_cost_hysteresis: 1.0  # default: 1.0 指定新候选人必须具有多少轨迹成本才能选择之前的轨迹（如果new_cost <old_cost * factor，则进行选择）。
+ selection_prefer_initial_plan: 0.95 
+ selection_obst_cost_scale: 100  # default: 100.0Extra scaling of obstacle cost terms just for selecting the 'best' candidate. 
+ selection_alternative_time_cost: False  #If true, time cost (sum of squared time differences) is replaced by the total transition time (sum of time differences). 
+
+ roadmap_graph_no_samples: 15    #指定为创建路线图而生成的样本数,默认 15。
+ roadmap_graph_area_width: 5  #随机关键点/路径点在开始和目标之间的矩形区域取样。指定该区域的宽度(单位为米)。默认 6。
+ roadmap_graph_area_length_scale: 1.0
+ h_signature_prescaler: 0.5  #尺度内部参数(H-signature),用于区分同伦类。警告:仅减小该参数,如果在局部代价图中观察到障碍物过多的问题,不要选择非常低的值,否则无法区分障碍物(0.2<value<=1)。默认 1。
+ h_signature_threshold: 0.1 #如果实部和复部的差都小于规定的阈值,则假设两个 H-signature 相等。默认 0.1。
+ obstacle_heading_threshold: 0.45
+ switching_blocking_period: 0.0
+ viapoints_all_candidates: True
+ delete_detours_backwards: True
+ max_ratio_detours_duration_best_duration: 3.0
+ visualize_hc_graph: True
+ visualize_with_time_as_z_axis_scale: False
+
+# Recovery
+ 
+ shrink_horizon_backup: True
+ shrink_horizon_min_duration: 10
+ oscillation_recovery: True
+ oscillation_v_eps: 0.1
+ oscillation_omega_eps: 0.1
+ oscillation_recovery_min_duration: 10
+ oscillation_filter_duration: 10
